@@ -112,6 +112,7 @@ def test_homonimas_de_fortaleza_sao_barradas(local):
     "FORTALEZA - CE",
     "Fortaleza",
 ])
+@pytest.mark.parametrize("local", ["São Paulo, São Paulo, Brazil", "São Paulo - SP", "São Paulo, SP", "São Paulo/SP", "SÃO PAULO - SP", "São Paulo"])
 @pytest.mark.parametrize("modalidade", ["Híbrido", "Presencial"])
 def test_fortaleza_de_verdade_passa(local, modalidade):
     """A outra metade: barrar homônima não pode barrar a cidade pedida."""
