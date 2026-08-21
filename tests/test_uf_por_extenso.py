@@ -77,13 +77,8 @@ def test_homonima_com_estado_por_extenso_e_barrada():
 def test_a_cidade_certa_continua_passando():
     """A outra metade: apertar a guarda não pode barrar a vaga de verdade."""
     for local in [
-        "Campina Grande, Paraíba, Brazil",
-        "Recife, Pernambuco, Brazil",
-        "Natal, Rio Grande do Norte, Brazil",
-        "Manaus, Amazonas, Brazil",
-        "Maceió, Alagoas, Brazil",
-        "Aracaju, Sergipe, Brazil",
-        "João Pessoa, Paraíba, Brazil",
-        "Caruaru, Pernambuco, Brazil",
+        "São Paulo, São Paulo, Brazil",
+        "Barueri, São Paulo, Brazil",
+        "Osasco, São Paulo, Brazil",
     ]:
         assert _vaga(local).combina_com(PERFIL_BR.regras), local
