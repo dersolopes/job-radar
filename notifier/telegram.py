@@ -12,7 +12,13 @@ logger = get_logger()
 def _escapar_texto(texto: str) -> str:
     if not texto:
         return ""
-    return str(texto).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return (
+        str(texto)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("/", "&#47;")  # Evita que barras quebrem o parser do Telegram
+    )
 
 def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
