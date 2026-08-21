@@ -107,28 +107,23 @@ def _linha_aviso_antiga(job) -> str:
 
 
 def notificar_vaga(job) -> bool:
-    # TODO (Fase 3): incluir aqui a % de compatibilidade com o currículo,
-    # calculada por IA, quando essa etapa for implementada.
-    #
-    # Linha de publicação só aparece quando a fonte expõe isso (nem toda
-    # expõe — ver Job.publicado_em / extrair_data_publicacao em job.py).
-    linha_publicacao = f"<b>Publicada:</b> {job.publicado_em_legivel}\n" if job.publicado_em else ""
-    linha_modalidade = f"<b>Modalidade:</b> {job.modalidade}\n" if job.modalidade else ""
+    linha_publicacao = f"<b>Publicada:</b> {_escapar_texto(job.publicado_em_legivel)}\n" if job.publicado_em else ""
+    linha_modalidade = f"<b>Modalidade:</b> {_escapar_texto(job.modalidade)}\n" if job.modalidade else ""
     texto = (
-    f"🚨 <b>Nova vaga encontrada!</b>\n\n"
-    f"{_linha_aviso_antiga(job)}"
-    f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-    f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
-    f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
-    f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
-    f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
-    f"<b>Local:</b> {_escapar_texto(job.local)}\n"
-    f"{linha_modalidade}"
-    f"<b>Site:</b> {_escapar_texto(job.site)}\n"
-    f"{linha_publicacao}\n"
-    f"Encontrada agora\n\n"
-    f"<b>Link:</b>\n{job.link}"
-)
+        f"🚨 <b>Nova vaga encontrada!</b>\n\n"
+        f"{_linha_aviso_antiga(job)}"
+        f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
+        f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
+        f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
+        f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
+        f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
+        f"<b>Local:</b> {_escapar_texto(job.local)}\n"
+        f"{linha_modalidade}"
+        f"<b>Site:</b> {_escapar_texto(job.site)}\n"
+        f"{linha_publicacao}\n"
+        f"Encontrada agora\n\n"
+        f"<b>Link:</b>\n{job.link}"
+    )
     return enviar_mensagem(texto, reply_markup=_teclado_feedback(job.id))
 
 
