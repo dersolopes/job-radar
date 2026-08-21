@@ -1,4 +1,3 @@
-
 import json
 
 import requests
@@ -19,8 +18,7 @@ def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
 
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "text": html.escape(texto),
-        "parse_mode": "HTML",
+        "text": texto,
         "disable_web_page_preview": False,
     }
     # Telegram exige reply_markup como string JSON quando o corpo do POST é
@@ -99,7 +97,7 @@ def _linha_aviso_antiga(job) -> str:
     preenchida há tempos."""
     if not job.publicacao_antiga:
         return ""
-    return f"⚠️ <b>Postada {job.publicado_em_legivel}</b> — pode já estar preenchida.\n"
+    return f"⚠️ Postada {job.publicado_em_legivel} — pode já estar preenchida.\n"
 
 
 def notificar_vaga(job) -> bool:
@@ -108,22 +106,22 @@ def notificar_vaga(job) -> bool:
     #
     # Linha de publicação só aparece quando a fonte expõe isso (nem toda
     # expõe — ver Job.publicado_em / extrair_data_publicacao em job.py).
-    linha_publicacao = f"<b>Publicada:</b> {job.publicado_em_legivel}\n" if job.publicado_em else ""
-    linha_modalidade = f"<b>Modalidade:</b> {job.modalidade}\n" if job.modalidade else ""
+    linha_publicacao = f"Publicada: {job.publicado_em_legivel}\n" if job.publicado_em else ""
+    linha_modalidade = f"Modalidade: {job.modalidade}\n" if job.modalidade else ""
     texto = (
-        f"🚨 <b>Nova vaga encontrada!</b>\n\n"
+        f"🚨 Nova vaga encontrada!\n\n"
         f"{_linha_aviso_antiga(job)}"
-        f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-        f"<b>Motivo:</b> {job.motivo}\n"
-        f"<b>Empresa:</b> {job.empresa}\n"
-        f"<b>Cargo:</b> {job.titulo}\n"
-        f"<b>Nível:</b> {job.senioridade}\n"
-        f"<b>Local:</b> {job.local}\n"
+        f"Relevância: {_linha_relevancia(job.relevancia)}\n"
+        f"Motivo: {job.motivo}\n"
+        f"Empresa: {job.empresa}\n"
+        f"Cargo: {job.titulo}\n"
+        f"Nível: {job.senioridade}\n"
+        f"Local: {job.local}\n"
         f"{linha_modalidade}"
-        f"<b>Site:</b> {job.site}\n"
+        f"Site: {job.site}\n"
         f"{linha_publicacao}\n"
         f"Encontrada agora\n\n"
-        f"<b>Link:</b>\n{job.link}"
+        f"Link:\n{job.link}"
     )
     return enviar_mensagem(texto, reply_markup=_teclado_feedback(job.id))
 
@@ -138,21 +136,21 @@ def notificar_vaga_exploratoria(job) -> bool:
     genérico o bastante pros dois antes de virar função só de um deles,
     então movida pra cá em vez de duplicada.
     """
-    linha_modalidade = f"<b>Modalidade:</b> {job.modalidade}\n" if job.modalidade else ""
+    linha_modalidade = f"Modalidade: {job.modalidade}\n" if job.modalidade else ""
     texto = (
-        f"🧭 <b>Vaga exploratória (Portugal/Espanha)</b>\n\n"
+        f"🧭 Vaga exploratória (Portugal/Espanha)\n\n"
         f"{_linha_aviso_antiga(job)}"
-        f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-        f"<b>Motivo:</b> {job.motivo}\n"
-        f"<b>Empresa:</b> {job.empresa}\n"
-        f"<b>Cargo:</b> {job.titulo}\n"
-        f"<b>Nível:</b> {job.senioridade}\n"
-        f"<b>Local:</b> {job.local}\n"
+        f"Relevância: {_linha_relevancia(job.relevancia)}\n"
+        f"Motivo: {job.motivo}\n"
+        f"Empresa: {job.empresa}\n"
+        f"Cargo: {job.titulo}\n"
+        f"Nível: {job.senioridade}\n"
+        f"Local: {job.local}\n"
         f"{linha_modalidade}"
-        f"<b>Site:</b> {job.site}\n\n"
+        f"Site: {job.site}\n\n"
         f"Achada via busca por Portugal/Espanha — modalidade não confirmada "
         f"como remota, pode ser presencial ou híbrida. Confirma no link.\n\n"
-        f"<b>Link:</b>\n{job.link}"
+        f"Link:\n{job.link}"
     )
     return enviar_mensagem(texto, reply_markup=_teclado_feedback(job.id))
 
@@ -172,7 +170,7 @@ def montar_digest(vagas: list[tuple], rotulo_perfil: str) -> list[str]:
     — quebra em partes numeradas em vez de estourar/truncar."""
     linhas = [
         f'{"🧭" if exploratoria else "•"} {_linha_relevancia(relevancia or 0)} '
-        f'<a href="{link}">{titulo}</a> — {empresa}'
+        f'{titulo} — {empresa}\n{link}'
         for titulo, empresa, link, relevancia, exploratoria in vagas
     ]
 
@@ -191,7 +189,7 @@ def montar_digest(vagas: list[tuple], rotulo_perfil: str) -> list[str]:
     total_partes = len(partes)
     mensagens = []
     for i, parte in enumerate(partes, start=1):
-        cabecalho = f"📋 <b>Digest diário — {rotulo_perfil}</b> ({len(vagas)} vaga(s))"
+        cabecalho = f"📋 Digest diário — {rotulo_perfil} ({len(vagas)} vaga(s))"
         if total_partes > 1:
             cabecalho += f" — parte {i}/{total_partes}"
         mensagens.append(cabecalho + "\n\n" + "\n".join(parte))
