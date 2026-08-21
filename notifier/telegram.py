@@ -144,20 +144,20 @@ def notificar_vaga_exploratoria(job) -> bool:
     """
     linha_modalidade = f"<b>Modalidade:</b> {job.modalidade}\n" if job.modalidade else ""
     texto = (
-    f"🚨 <b>Nova vaga encontrada!</b>\n\n"
-    f"{_linha_aviso_antiga(job)}"
-    f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-    f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
-    f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
-    f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
-    f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
-    f"<b>Local:</b> {_escapar_texto(job.local)}\n"
-    f"{linha_modalidade}"
-    f"<b>Site:</b> {_escapar_texto(job.site)}\n"
-    f"{linha_publicacao}\n"
-    f"Encontrada agora\n\n"
-    f"<b>Link:</b>\n{job.link}"
-)
+        f"🧭 <b>Vaga exploratória (Portugal/Espanha)</b>\n\n"
+        f"{_linha_aviso_antiga(job)}"
+        f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
+        f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
+        f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
+        f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
+        f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
+        f"<b>Local:</b> {_escapar_texto(job.local)}\n"
+        f"{linha_modalidade}"
+        f"<b>Site:</b> {_escapar_texto(job.site)}\n\n"
+        f"Achada via busca por Portugal/Espanha — modalidade não confirmada "
+        f"como remota, pode ser presencial ou híbrida. Confirma no link.\n\n"
+        f"<b>Link:</b>\n{job.link}"
+    )
     return enviar_mensagem(texto, reply_markup=_teclado_feedback(job.id))
 
 
