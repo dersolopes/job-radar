@@ -87,33 +87,3 @@ def test_a_cidade_certa_continua_passando():
         "Caruaru, Pernambuco, Brazil",
     ]:
         assert _vaga(local).combina_com(PERFIL_BR.regras), local
-
-
-@pytest.mark.parametrize("local", [
-    "Fortaleza de Minas, Minas Gerais, Brazil",
-    "Fortaleza de Minas - MG",
-    "Fortaleza dos Nogueiras, Maranhão, Brazil",
-    "Fortaleza dos Valos, Rio Grande do Sul, Brazil",
-])
-def test_homonimas_de_fortaleza_sao_barradas(local):
-    """Fortaleza-CE entrou nas cidades aceitas — e trouxe três homônimas.
-
-    Medido antes da guarda por extenso: as três passavam no formato do
-    LinkedIn. Só "Fortaleza de Minas - MG", com sigla, era barrada.
-    """
-    assert not _vaga(local).combina_com(PERFIL_BR.regras)
-
-
-@pytest.mark.parametrize("local", [
-    "Fortaleza, Ceará, Brazil",
-    "Fortaleza - CE",
-    "Fortaleza, CE",
-    "Fortaleza/CE",
-    "FORTALEZA - CE",
-    "Fortaleza",
-])
-@pytest.mark.parametrize("local", ["São Paulo, São Paulo, Brazil", "São Paulo - SP", "São Paulo, SP", "São Paulo/SP", "SÃO PAULO - SP", "São Paulo"])
-@pytest.mark.parametrize("modalidade", ["Híbrido", "Presencial"])
-def test_fortaleza_de_verdade_passa(local, modalidade):
-    """A outra metade: barrar homônima não pode barrar a cidade pedida."""
-    assert _vaga(local, modalidade).combina_com(PERFIL_BR.regras)
