@@ -20,7 +20,6 @@ def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": texto,
-        "parse_mode": "HTML",
         "disable_web_page_preview": False,
     }
     # Telegram exige reply_markup como string JSON quando o corpo do POST é
