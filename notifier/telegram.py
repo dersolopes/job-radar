@@ -9,18 +9,7 @@ from core.logger import get_logger
 
 logger = get_logger()
 
-def _escapar_texto(texto: str) -> str:
-    if not texto:
-        return ""
-    return (
-        str(texto)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace("/", "&#47;")
-        .replace("*", "&#42;")  # Evita que asteriscos corrompam o texto formatado
-    )
-    
+
 def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         logger.warning("Telegram não configurado (token/chat_id ausentes no .env). Pulando envio.")
@@ -42,11 +31,6 @@ def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
 
     try:
         resposta = requests.post(url, data=payload, timeout=10)
-        # ADICIONADO PARA DEBUG: se der erro, imprime o texto exato e o retorno da API
-        if resposta.status_code != 200:
-            logger.error(f"TELEGRAM FALHOU [{resposta.status_code}]: {resposta.text}")
-            logger.error(f"TEXTO DA MENSAGEM QUE QUEBROU:\n{texto}")
-        
         resposta.raise_for_status()
         return True
     # MEDIDO: logar a exceção direta (`{e}`) põe a URL inteira no log —
@@ -63,13 +47,10 @@ def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
     except requests.HTTPError as e:
         status = e.response.status_code if e.response is not None else None
         motivo = e.response.reason if e.response is not None else "sem detalhe"
-        logger.error(f"Erro ao enviar mensagem no Telegram: HTTP {status} ({motivo})")
-        return False
-    except requests.RequestException as e:
-        logger.error(
-            f"Erro ao enviar mensagem no Telegram: {type(e).__name__} "
-            "(falha de conexão, sem resposta do servidor)"
-        )
+        detalhe = e.response.text if e.response is not None else ""
+        # Log seguro: mostra o erro da API do Telegram e o texto que tentamos enviar (sem expor o token da URL)
+        logger.error(f"Erro ao enviar mensagem no Telegram: HTTP {status} ({motivo}) | Detalhe: {detalhe}")
+        logger.error(f"TEXTO DA MENSAGEM QUE FALHOU:\n{texto}")
         return False
 
 
@@ -119,19 +100,24 @@ def _linha_aviso_antiga(job) -> str:
 
 
 def notificar_vaga(job) -> bool:
-    linha_publicacao = f"<b>Publicada:</b> {_escapar_texto(job.publicado_em_legivel)}\n" if job.publicado_em else ""
-    linha_modalidade = f"<b>Modalidade:</b> {_escapar_texto(job.modalidade)}\n" if job.modalidade else ""
+    # TODO (Fase 3): incluir aqui a % de compatibilidade com o currículo,
+    # calculada por IA, quando essa etapa for implementada.
+    #
+    # Linha de publicação só aparece quando a fonte expõe isso (nem toda
+    # expõe — ver Job.publicado_em / extrair_data_publicacao em job.py).
+    linha_publicacao = f"<b>Publicada:</b> {job.publicado_em_legivel}\n" if job.publicado_em else ""
+    linha_modalidade = f"<b>Modalidade:</b> {job.modalidade}\n" if job.modalidade else ""
     texto = (
         f"🚨 <b>Nova vaga encontrada!</b>\n\n"
         f"{_linha_aviso_antiga(job)}"
         f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-        f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
-        f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
-        f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
-        f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
-        f"<b>Local:</b> {_escapar_texto(job.local)}\n"
+        f"<b>Motivo:</b> {job.motivo}\n"
+        f"<b>Empresa:</b> {job.empresa}\n"
+        f"<b>Cargo:</b> {job.titulo}\n"
+        f"<b>Nível:</b> {job.senioridade}\n"
+        f"<b>Local:</b> {job.local}\n"
         f"{linha_modalidade}"
-        f"<b>Site:</b> {_escapar_texto(job.site)}\n"
+        f"<b>Site:</b> {job.site}\n"
         f"{linha_publicacao}\n"
         f"Encontrada agora\n\n"
         f"<b>Link:</b>\n{job.link}"
@@ -154,13 +140,13 @@ def notificar_vaga_exploratoria(job) -> bool:
         f"🧭 <b>Vaga exploratória (Portugal/Espanha)</b>\n\n"
         f"{_linha_aviso_antiga(job)}"
         f"<b>Relevância:</b> {_linha_relevancia(job.relevancia)}\n"
-        f"<b>Motivo:</b> {_escapar_texto(job.motivo)}\n"
-        f"<b>Empresa:</b> {_escapar_texto(job.empresa)}\n"
-        f"<b>Cargo:</b> {_escapar_texto(job.titulo)}\n"
-        f"<b>Nível:</b> {_escapar_texto(job.senioridade)}\n"
-        f"<b>Local:</b> {_escapar_texto(job.local)}\n"
+        f"<b>Motivo:</b> {job.motivo}\n"
+        f"<b>Empresa:</b> {job.empresa}\n"
+        f"<b>Cargo:</b> {job.titulo}\n"
+        f"<b>Nível:</b> {job.senioridade}\n"
+        f"<b>Local:</b> {job.local}\n"
         f"{linha_modalidade}"
-        f"<b>Site:</b> {_escapar_texto(job.site)}\n\n"
+        f"<b>Site:</b> {job.site}\n\n"
         f"Achada via busca por Portugal/Espanha — modalidade não confirmada "
         f"como remota, pode ser presencial ou híbrida. Confirma no link.\n\n"
         f"<b>Link:</b>\n{job.link}"
@@ -177,10 +163,13 @@ _LIMITE_CHARS_DIGEST = 3500
 def montar_digest(vagas: list[tuple], rotulo_perfil: str) -> list[str]:
     """Monta o texto do digest diário (item 08) a partir do que
     obter_vagas_pendentes_digest() devolve — já vem ordenado da mais
-    relevante pra menos. Devolve uma LISTA de mensagens, não uma só."""
+    relevante pra menos. Devolve uma LISTA de mensagens, não uma só: com
+    ~93% do volume indo pro digest (ver LIMIAR_DIGEST_IMEDIATO em
+    config.py), um dia cheio passa fácil dos 4096 caracteres do Telegram
+    — quebra em partes numeradas em vez de estourar/truncar."""
     linhas = [
         f'{"🧭" if exploratoria else "•"} {_linha_relevancia(relevancia or 0)} '
-        f'<a href="{link}">{_escapar_texto(titulo)}</a> — {_escapar_texto(empresa)}'
+        f'<a href="{link}">{titulo}</a> — {empresa}'
         for titulo, empresa, link, relevancia, exploratoria in vagas
     ]
 
@@ -204,6 +193,7 @@ def montar_digest(vagas: list[tuple], rotulo_perfil: str) -> list[str]:
             cabecalho += f" — parte {i}/{total_partes}"
         mensagens.append(cabecalho + "\n\n" + "\n".join(parte))
     return mensagens
+
 
 def enviar_digest(vagas: list[tuple], rotulo_perfil: str) -> bool:
     """Manda todas as partes do digest em sequência. Só True se TODAS
