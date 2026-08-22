@@ -17,9 +17,10 @@ def _escapar_texto(texto: str) -> str:
         .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
-        .replace("/", "&#47;")  # Evita que barras quebrem o parser do Telegram
+        .replace("/", "&#47;")
+        .replace("*", "&#42;")  # Evita que asteriscos corrompam o texto formatado
     )
-
+    
 def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         logger.warning("Telegram não configurado (token/chat_id ausentes no .env). Pulando envio.")
@@ -41,6 +42,11 @@ def enviar_mensagem(texto: str, reply_markup: dict | None = None) -> bool:
 
     try:
         resposta = requests.post(url, data=payload, timeout=10)
+        # ADICIONADO PARA DEBUG: se der erro, imprime o texto exato e o retorno da API
+        if resposta.status_code != 200:
+            logger.error(f"TELEGRAM FALHOU [{resposta.status_code}]: {resposta.text}")
+            logger.error(f"TEXTO DA MENSAGEM QUE QUEBROU:\n{texto}")
+        
         resposta.raise_for_status()
         return True
     # MEDIDO: logar a exceção direta (`{e}`) põe a URL inteira no log —
