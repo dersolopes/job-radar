@@ -3,7 +3,7 @@ name: JobRadar
 on:
   #schedule:
     # Roda todos os dias às 08:00 UTC (o que equivale a 05:00 da manhã em Brasília)
-    #- cron: '0 8 * * *'
+    - cron: '0 11 * * *'
   workflow_dispatch: # Permite que você clique em "Run workflow" manualmente quando quiser
 
 concurrency:
